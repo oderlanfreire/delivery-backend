@@ -1,0 +1,34 @@
+{
+    "openapi": "3.0.1",
+    "info":{
+        "title": "Delivery-Backend",
+        "description": "Essa API tem como foco simplificar o uso de endpoints do projeto para acesso do frontend",
+        "contact":{
+            "email": "oderlanfreire@gmail.com.br"
+        },
+        "version": "1.0.0"
+    },
+    "servers":[
+        {
+            "url":"http://localhost:8080",
+            "description": "servidor local de desenvolvimento"
+        }
+    ],
+    "components":{
+        "schemas":{
+           
+        },
+        "securitySchemes":{
+            "bearerAuth":{
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT"
+            }
+        }
+    },
+
+    "paths":{
+        
+                
+    }
+}
