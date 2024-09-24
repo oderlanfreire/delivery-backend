@@ -7,7 +7,7 @@ const dialect = process.env.DIALECT || 'mysql';
 
 
 const connection = new Sequelize(db, user, password, {
-    host: process.host.HOST || 'localhost',
+    host: process.env.HOST || 'localhost',
     dialect: dialect, 
     timezone: "-03:00"
 })
