@@ -15,7 +15,7 @@ const clienteController = {
                 return res.status(302).json({message: 'o Cliente já possui cadastro'})
             }
 
-            const hashsenha = await bcrypt.hash(password, 10);
+            const hashsenha = await bcrypt.hash(senha, 10);
 
             await Cliente.create({
                 nome,
