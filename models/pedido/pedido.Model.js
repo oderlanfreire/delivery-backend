@@ -2,6 +2,7 @@ const Sequelize = require("sequelize")
 const db = require('../../connection/db')
 const Cardapio = require('../cardapio/cardapio.Model')
 const Cliente = require('../cliente/cliente.Model')
+const Restaurante = require('../restaurante/restaurante.Model')
 
 const Pedidos = db.connection.define('pedidos', {
     id:{
@@ -16,6 +17,18 @@ const Pedidos = db.connection.define('pedidos', {
             model: Cardapio,
             key:'id'
         }
+    },
+    id_restaurante:{
+        type: Sequelize.UUID,
+        allowNull: false,
+        references:{
+            model: Restaurante,
+            key:'id'
+        }
+    },
+    nome_do_prato:{
+        type: Sequelize.STRING,
+        allowNull: false
     },
     quantidade:{
         type: Sequelize.INTEGER,
@@ -36,8 +49,8 @@ const Pedidos = db.connection.define('pedidos', {
         type: Sequelize.STRING,
         allowNull: false,
         validate:{
-            args:[["delivery", "entrega pela loja", "retirada na loja"]],
-            msg: 'Apenas 3 possibilidades: "delivery", "entrega pela loja" e "retirada na loja"'
+            args:[["delivery", "entrega pelo restaurante", "retirada no restaurante"]],
+            msg: 'Apenas 3 possibilidades: "delivery", "entrega pelo restaurante" e "retirada no restaurante"'
         }
     },
     id_usuario:{
@@ -55,7 +68,11 @@ const Pedidos = db.connection.define('pedidos', {
     status_pedido:{
         type: Sequelize.STRING,
         allowNull: false,
-    },
+        validate:{
+            args:[["aguardando confirmação", "confirmado, prato sendo preparado", "saiu para a entrega", "aguardando retirada no restaurante", "entregue"]],
+            msg: 'Apenas 3 possibilidades: "aguardando confirmação", "confirmado, prato sendo preparado", "saiu para a entrega", "aguardando retirada no restaurante", "entregue"'
+        }
+    }
 })
 
 module.exports = Pedidos
