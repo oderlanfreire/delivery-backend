@@ -116,8 +116,29 @@ const clienteController = {
                 tipo_entrega: entrega,
                 id_usuario: usrId,
                 endereco_entrega: endereco,
+                status_pedido: "realizado"
             })
+
+            return res.status(201).json({message: `Pedido realizado com sucesso.\n${pedido}`})
             
+        } catch (error) {
+            return res.status(500).json({message: error})
+        }
+    },
+
+    cancelarPedido: async (req, res) => {
+        try {
+            const idPedido = req.body.idPedido
+            const findPedido = Pedidos.findByPk(idPedido)
+
+            if(!findPedido || findPedido.status_pedido === "cancelado"){
+                return res.status(404).json({message: 'Pedido não encontrado.'});
+            }
+
+            findPedido.setDataValue('status_pedido', 'cancelado')
+            findPedido.save()
+            return res.status(200).json({message: "pedido cancelado pelo usuário."})
+
         } catch (error) {
             return res.status(500).json({message: error})
         }

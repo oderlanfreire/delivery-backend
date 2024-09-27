@@ -55,6 +55,10 @@ const Pedidos = db.connection.define('pedidos', {
     status_pedido:{
         type: Sequelize.STRING,
         allowNull: false,
+        validate:{
+            args:[["realizado", "sendo preparado pela loja", "saiu para a entrega", "entregue", "cancelado"]],
+            msg: 'Possibilidades: "realizado", "sendo preparado pela loja", "saiu para a entrega", "entregue", "cancelado"'
+        }
     },
 })
 
