@@ -76,7 +76,7 @@ const restauranteController = {
             return res.status(200).json({message: `Você sacou  R$ ${valorTransferencia}.\nSeu saldo no app agora é 0.`})
 
         } catch (error) {
-            
+            return res.status(500).json({message: error})
         }
     },
 

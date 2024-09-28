@@ -1,7 +1,7 @@
 const Sequelize = require("sequelize")
 const db = require("../../connection/db")
 
-const Restaurante = db.connection('restaurante', define({
+const Restaurante = db.connection.define('restaurante',{
     id:{
         type: Sequelize.UUID,
         default: Sequelize.UUIDV4,
@@ -50,7 +50,7 @@ const Restaurante = db.connection('restaurante', define({
         }
     }
 
-}))
+})
 
 
 module.exports = Restaurante

@@ -74,7 +74,7 @@ const clienteController = {
         }
     },
 
-    pesquisar_pratos: async (req, res) =>{
+    pesquisarPratos: async (req, res) =>{
         try {
             const prato = req.body.prato
 

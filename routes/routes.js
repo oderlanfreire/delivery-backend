@@ -8,7 +8,7 @@ const router = express.Router()
 router.post('cliente/register', clienteController.registerClient)
 router.post('cliente/login', clienteController.login)
 router.delete('cliente/delete', clienteController.deleteAccount)
-router.post('cliente/search-food', clienteController.pesquisar_pratos)
+router.post('cliente/search-food', clienteController.pesquisarPratos)
 router.post('cliente/place-order', clienteController.realizarPedido)
 router.put('cliente/cancel-order', clienteController.cancelarPedido)
 

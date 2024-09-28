@@ -4,6 +4,7 @@ const bodyParser = require('body-parser')
 const connection = require('./connection/db')
 const swaggerUi = require('swagger-ui-express')
 const swaggerDocs = require('./swagger.json')
+const routes = require("./routes/routes")
 
 const app = express()
 
@@ -28,6 +29,7 @@ process.on('SIGTERM', async() =>{
     process.exit(0);
 })
 
+app.use('/', routes)
 
 app.listen(8080, ()=>{
     console.log("Server rodando");
