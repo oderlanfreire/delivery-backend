@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken")
+const bcrypt = require('bcryptjs')
 const Cliente = require('../../models/cliente/cliente.Model')
 const Restaurante = require('../../models/restaurante/restaurante.Model.js')
 const Cardapio = require('../../models/cardapio/cardapio.Model.js')
@@ -42,18 +43,18 @@ const clienteController = {
             const user = await Cliente.findOne({where:{email}})
 
             if(!user){
-                return res.status(400).json({message: 'Email inválido.'});
+                return res.status(400).json({message: 'Email inválido.'})
             }
 
             const found = await bcrypt.compare(senha, user.senha);
             
             if(!found){
-                return res.status(400).json({message: 'senha inválida'});
+                return res.status(400).json({message: 'senha inválida'})
             }
 
             const token = jwt.sign({email: user.email}, process.env.SECRET, {expiresIn: process.env.JWT_EXPIRES_IN})
 
-            res.json({token})
+            res.status(200).json({token})
 
         } catch (error) {
             return res.status(500).json({message: error})
