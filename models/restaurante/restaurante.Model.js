@@ -4,7 +4,7 @@ const db = require("../../connection/db")
 const Restaurante = db.connection.define('restaurante',{
     id:{
         type: Sequelize.UUID,
-        default: Sequelize.UUIDV4,
+        defaultValue: Sequelize.UUIDV4,
         primaryKey: true
     },
     dono:{
@@ -29,8 +29,7 @@ const Restaurante = db.connection.define('restaurante',{
         allowNull: false,
         unique: true,
         validate:{
-            args: true,
-            msg: 'Insira um email válido'
+            isEmail: true
         }
     },
     senha:{

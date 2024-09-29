@@ -28,9 +28,12 @@ process.on('SIGINT', async() =>{
 process.on('SIGTERM', async() =>{
     await connection.closeConnection();
     process.exit(0);
-})
+})  
 
 app.use('/', routes)
+app.get('/', (req, res) =>{
+    res.send("API rodando")
+})
 
 app.listen(8080, ()=>{
     console.log("Server rodando");

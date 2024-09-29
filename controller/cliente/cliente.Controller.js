@@ -4,6 +4,7 @@ const Cliente = require('../../models/cliente/cliente.Model')
 const Restaurante = require('../../models/restaurante/restaurante.Model.js')
 const Cardapio = require('../../models/cardapio/cardapio.Model.js')
 const Pedidos = require('../../models/pedido/pedido.Model')
+const { where } = require("sequelize")
 
 
 const clienteController = {
@@ -52,7 +53,7 @@ const clienteController = {
                 return res.status(400).json({message: 'senha inválida'})
             }
 
-            const token = jwt.sign({email: user.email}, process.env.SECRET, {expiresIn: process.env.JWT_EXPIRES_IN})
+            const token = jwt.sign({email: user.email, type: "cliente", id: user.id}, process.env.SECRET, {expiresIn: process.env.JWT_EXPIRES_IN})
 
             res.status(200).json({token})
 
@@ -63,7 +64,9 @@ const clienteController = {
 
     deleteAccount: async (req, res) =>{
         try {
-            const userId = req.id
+            const userId = req.user.id
+
+            // await Pedidos.destroy({where:{id_usuario: userId}})
 
             await Cliente.destroy({where:{id: userId}})
 
@@ -81,12 +84,13 @@ const clienteController = {
             const opcoes = []
             const itens = await Cardapio.findAll({where:{nome_do_prato: prato}})
 
-            itens.array.forEach(item => {
-                const opcao = getRestaurante(item.id)
-                opcoes.push({'prato': item.nome, 'restaurante': opcao})
-            })
+            for(const i of itens){
+                console.log(i)
+                const opcao = await getRestaurante(i.idRestaurante)
+                console.log(opcao)
+                opcoes.push({'prato': i.nome_do_prato, 'restaurante': opcao})
 
-            opcoes.json_encoded()
+            }
 
             return res.status(200).json(opcoes)
 
@@ -96,10 +100,8 @@ const clienteController = {
     },
 
     realizarPedido: async (req, res) => {
-        const token = req.headers.authorization(' ')[1]
-        const decoded = jwt.verify(token, process.env.SECRET)
-        const usrId = decoded.id
         try {
+            const userId = req.user.id
             const restaurante = req.body.restaurante
             const prato = req.body.prato
             const quantidade = req.body.quantidade
@@ -107,20 +109,21 @@ const clienteController = {
             const endereco = req.body.endereco
             const entrega = req.body.entrega
 
-            const pratoID = getPratoID(prato, restaurante)
+            const pratoID = await getPratoID(prato, restaurante)
+            idRestaurante = await Restaurante.findOne({where:{nome: restaurante}})
 
-
-            const pedido = Pedidos.create({
+            const pedido = await Pedidos.create({
                 id_item: pratoID,
+                nome_do_prato: prato,
+                id_restaurante: idRestaurante.id,
                 quantidade: quantidade,
                 forma_pagamento: pagamento,
                 tipo_entrega: entrega,
-                id_usuario: usrId,
+                id_usuario: userId,
                 endereco_entrega: endereco,
-                status_pedido: "realizado"
+                status_pedido: "aguardando confirmação"
             })
-
-            return res.status(201).json({message: `Pedido realizado com sucesso.\n${pedido}`})
+            return res.status(201).json({message: `Pedido realizado com sucesso. Id do pedido: ${pedido.id}`})
             
         } catch (error) {
             return res.status(500).json({message: error})
@@ -130,14 +133,14 @@ const clienteController = {
     cancelarPedido: async (req, res) => {
         try {
             const idPedido = req.body.idPedido
-            const findPedido = Pedidos.findByPk(idPedido)
+            const findPedido = await Pedidos.findByPk(idPedido)
 
             if(!findPedido || findPedido.status_pedido === "cancelado"){
                 return res.status(404).json({message: 'Pedido não encontrado.'});
             }
 
-            findPedido.setDataValue('status_pedido', 'cancelado')
-            findPedido.save()
+            findPedido.status_pedido = 'cancelado'
+            await findPedido.save()
             return res.status(200).json({message: "pedido cancelado pelo usuário."})
 
         } catch (error) {
@@ -164,5 +167,5 @@ async function getPratoID(nome, restaurante) {
     return idItem.id
 }
 
-
+console.log(clienteController)
 module.exports = clienteController;

@@ -1,13 +1,15 @@
 const Restaurante = require('../../models/restaurante/restaurante.Model')
+const jwt = require("jsonwebtoken")
 const bcrypt = require('bcryptjs')
 const Cardapio = require('../../models/cardapio/cardapio.Model')
 const Pedidos = require('../../models/pedido/pedido.Model') 
+const { where } = require('sequelize')
 
 const restauranteController = {
     registerRestaurant: async (req, res) =>{
         try {
             const dono = req.body.dono
-            const nomeDoRestaurante = req.body.nome
+            const nome = req.body.nomeDoRestaurante
             const cnpj = req.body.cnpj
             const email = req.body.email
             const senha = req.body.senha
@@ -26,7 +28,7 @@ const restauranteController = {
 
             await Restaurante.create({
                 dono: dono,
-                nome: nomeDoRestaurante,
+                nome: nome,
                 cnpj: cnpj,
                 email: email,
                 senha: hashsenha,
@@ -50,12 +52,12 @@ const restauranteController = {
             }
 
             const found = await bcrypt.compare(senha, restaurant.senha)
-
+            
             if(!found){
                 return res.status(400).json({message: 'senha inválida'})
             } 
-            const token = jwt.sign({email: user.email}, process.env.SECRET, {expiresIn: process.env.JWT_EXPIRES_IN})
-            return res.status(200).json({token})
+            const token = jwt.sign({email: restaurant.email, type: 'restaurante', id: restaurant.id}, process.env.SECRET, {expiresIn: process.env.JWT_EXPIRES_IN})
+            res.status(200).json({token})
         } catch (error) {
             return  res.status(500).json({message: error})        
         }
@@ -64,7 +66,7 @@ const restauranteController = {
 
     sacarLucro: async (req, res) =>{
         try {
-            const userId = req.id
+            const userId = req.user.id
 
             const saldoRestaurante = await Restaurante.findByPk(userId)
             if(saldoRestaurante.receita === 0){
@@ -82,13 +84,15 @@ const restauranteController = {
 
     deleteAccount: async (req, res) =>{
         try {
-            const userId = req.id
+            const userId = req.user.id
             const restauranteSaldo = await Restaurante.findByPk(userId)
             if(restauranteSaldo.receita > 0){
                 return res.status(503).json({message: 'Você ainda possui saldo na receita, realize o saque e tente novamente.'})
             }else if(restauranteSaldo.receita < 0){
                 return res.status(503).json({message: 'Você ainda possui saldo negativo na receita, realize o pagamento e tente novamente.'})
             }
+            await Pedidos.destroy({where:{id_restaurante:userId}})
+            await Cardapio.destroy({where: {idRestaurante: userId}})
             await Restaurante.destroy({where:{id: userId}})
 
             return res.status(200).json({message:`conta deletada com sucesso.`})
@@ -100,9 +104,10 @@ const restauranteController = {
     registerCardapioItem: async (req, res) =>{
         try {
 
+            console.log(req.id)
             const nomeDoPrato = req.body.nomeDoPrato
             const preco = req.body.preco
-            const idRestaurante = req.id
+            const idRestaurante = req.user.id
             
             const findPrato = await Cardapio.findOne({where:{
                 nome_do_prato: nomeDoPrato,
@@ -128,19 +133,17 @@ const restauranteController = {
     updateCardapioItem: async (req, res) =>{
         try{
 
-            
             const nomeDoPrato = req.body.nomeDoPrato
             const campo = req.body.campo
             const value = req.body.value
-            const idRestaurante = req.id
+            const idRestaurante = req.user.id
 
-            const pratoID = getPratoID(nomeDoPrato, idRestaurante)
-
+            const pratoID = await getPratoID(nomeDoPrato, idRestaurante)
             const findPrato = await Cardapio.findByPk(pratoID)
             if(!findPrato){
                 return res.status(400).json({message: "Prato não localizado"})
             }
-
+            
             if(campo === "nome do prato"){
                 findPrato.setDataValue("nome_do_prato", value)
             }else if(campo==="preco"){
@@ -158,14 +161,16 @@ const restauranteController = {
 
     deleteCardapioItem: async (req, res) =>{
         try {
-            const nomeDoPrato = req.nomeDoPrato
-            const idRestaurante = req.id
+            const nomeDoPrato = req.body.nomeDoPrato
+            const idRestaurante = req.user.id
 
-            const idPrato = getPratoID(nomeDoPrato, idRestaurante)
-            const findPrato = Cardapio.findByPk(idPrato)
+            const idPrato = await getPratoID(nomeDoPrato, idRestaurante)
+            const findPrato = await Cardapio.findByPk(idPrato)
+
             if(!findPrato){
                 return res.status(400).json({message: "Prato não cadastrado."})
             }
+            await Pedidos.destroy({where:{id_item: idPrato}})
 
             await Cardapio.destroy({where:{id:idPrato}})
             return res.status(200).json({message: `${nomeDoPrato} excluido do cardapio com sucesso.`})
@@ -175,19 +180,23 @@ const restauranteController = {
     },
     listarPedidos: async (req,res) =>{
         try {
-            const idRestaurante = req.id
+            const idRestaurante = req.user.id
     
             const findPedido = await Pedidos.findAll({where:{id_restaurante: idRestaurante}})
-            const pedidosAbertos = ''
-            if(!findPedido){
+            if(findPedido.length === 0){
                 return res.status(400).json({message: "Nenhum pedido registrado"})
             }
-            if(findPedido.status_pedido != "entregue"){
-                return res.status(200).json({message:{
-                "id": findPedido.id,
-                "status": findPedido.status_pedido
-                }})
+            pedidosAEntregar = findPedido.filter(pedido => pedido .status_pedido != "entregue")
+            if(pedidosAEntregar.length === 0){
+                return res.status(200).json({message: 'Todos os pedidos ja foram entregues'})
             }
+            return res.status(200).json({
+                pedidos: pedidosAEntregar.map(pedido => ({
+                    id: pedido.id,
+                    status: pedido.status_pedido
+                }))
+            })
+            
         } catch (error) {
             return res.status(500).json({message: error})
         }
@@ -197,13 +206,13 @@ const restauranteController = {
         try {
             const idPedido = req.body.idPedido
             const novoStatus = req.body.novoStatus
-            const findPedido = Pedidos.findByPk(idPedido)
+            const findPedido = await Pedidos.findByPk(idPedido)
 
             if(!findPedido || findPedido.status_pedido === "cancelado"){
                 return res.status(404).json({message: 'Pedido não encontrado.'});
             }
 
-            findPedido.setDataValue('status_pedido', novoStatus)
+            findPedido.status_pedido = novoStatus
             findPedido.save()
             return res.status(200).json({message: "Status atualizado"})
 
@@ -215,9 +224,7 @@ const restauranteController = {
 }
 
 async function getPratoID(nome, restaurante) {
-    const idRestaurante = await Restaurante.findOne({where: {nome: restaurante}})
-    const idItem = await Cardapio.findOne({where:{nome_do_prato: nome, idRestaurante: idRestaurante.id}})
-
+    const idItem = await Cardapio.findOne({where:{nome_do_prato: nome, idRestaurante: restaurante}})
     return idItem.id
 }
 
