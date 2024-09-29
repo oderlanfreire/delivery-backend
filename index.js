@@ -2,8 +2,10 @@ require('dotenv').config()
 const express = require('express')
 const bodyParser = require('body-parser')
 const connection = require('./connection/db')
+const syncDB = require('./connection/syncDB')
 const swaggerUi = require('swagger-ui-express')
 const swaggerDocs = require('./swagger.json')
+const routes = require("./routes/routes")
 
 const app = express()
 
@@ -26,8 +28,12 @@ process.on('SIGINT', async() =>{
 process.on('SIGTERM', async() =>{
     await connection.closeConnection();
     process.exit(0);
-})
+})  
 
+app.use('/', routes)
+app.get('/', (req, res) =>{
+    res.send("API rodando")
+})
 
 app.listen(8080, ()=>{
     console.log("Server rodando");

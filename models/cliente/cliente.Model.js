@@ -16,8 +16,7 @@ const Cliente = db.connection.define('cliente', {
         allowNull: false,
         unique: true,
         validate:{
-            args: true,
-            msg: 'Insira um email válido'
+            isEmail: true
         }
     },
     senha:{

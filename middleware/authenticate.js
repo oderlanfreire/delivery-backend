@@ -13,10 +13,14 @@ async function loginUserVerify(req, res, next) {
     try {
         const decoded = jwt.verify(token, secret)
         const loginId = decoded.id
+        const usuario = decoded.type
 
-        let login = await user.findByPk(loginId)
+        let login
+        
+        if(usuario === "cliente")
+            login= await user.findByPk(loginId)
 
-        if(!login){
+        if(usuario === 'restaurante'){
             login = await restaurant.findByPk(loginId)
         }
 
@@ -30,3 +34,5 @@ async function loginUserVerify(req, res, next) {
         return res.status(500).json({message: error})
     }
 }
+
+module.exports = loginUserVerify

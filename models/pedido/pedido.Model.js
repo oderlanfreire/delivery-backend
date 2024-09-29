@@ -41,16 +41,20 @@ const Pedidos = db.connection.define('pedidos', {
         type: Sequelize.STRING,
         allowNull: false,
         validate:{
-            args:[["credito", "debito", "pix", "dinheiro", "carteira do app"]],
-            msg: 'Apenas estas possibilidades: "credito", "debito", "pix", "dinheiro", "carteira do app"'
+            isIn:{
+                args:[["credito", "debito", "pix", "dinheiro", "carteira do app"]],
+                msg: 'Apenas estas possibilidades: "credito", "debito", "pix", "dinheiro", "carteira do app"'
+            }
         }
     },
     tipo_entrega:{
         type: Sequelize.STRING,
         allowNull: false,
         validate:{
-            args:[["delivery", "entrega pelo restaurante", "retirada no restaurante"]],
-            msg: 'Apenas 3 possibilidades: "delivery", "entrega pelo restaurante" e "retirada no restaurante"'
+            isIn:{
+                args:[["delivery", "entrega pelo restaurante", "retirada no restaurante"]],
+                msg: 'Apenas 3 possibilidades: "delivery", "entrega pelo restaurante" e "retirada no restaurante"'
+            }
         }
     },
     id_usuario:{
@@ -69,8 +73,10 @@ const Pedidos = db.connection.define('pedidos', {
         type: Sequelize.STRING,
         allowNull: false,
         validate:{
-            args:[["aguardando confirmação", "confirmado, prato sendo preparado", "saiu para a entrega", "aguardando retirada no restaurante", "entregue"]],
-            msg: 'Apenas 3 possibilidades: "aguardando confirmação", "confirmado, prato sendo preparado", "saiu para a entrega", "aguardando retirada no restaurante", "entregue"'
+            isIn:{
+                args:[["aguardando confirmação","cancelado", "confirmado, prato sendo preparado", "saiu para a entrega", "aguardando retirada no restaurante", "entregue"]],
+                msg: 'Apenas 4 possibilidades: "aguardando confirmação", "cancelado", "confirmado, prato sendo preparado", "saiu para a entrega", "aguardando retirada no restaurante", "entregue"'
+            }
         }
     }
 })
