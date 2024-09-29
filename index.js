@@ -3,8 +3,6 @@ const express = require('express')
 const bodyParser = require('body-parser')
 const connection = require('./connection/db')
 const syncDB = require('./connection/syncDB')
-const swaggerUi = require('swagger-ui-express')
-const swaggerDocs = require('./swagger.json')
 const routes = require("./routes/routes")
 
 const app = express()
@@ -12,7 +10,6 @@ const app = express()
 
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json())
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs))
 
 connection.connection.authenticate().then(() =>{
     console.log("Conexão com banco realizada com sucesso!")

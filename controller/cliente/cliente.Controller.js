@@ -167,5 +167,4 @@ async function getPratoID(nome, restaurante) {
     return idItem.id
 }
 
-console.log(clienteController)
-module.exports = clienteController;
+module.exports = clienteController
