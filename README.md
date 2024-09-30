@@ -53,7 +53,7 @@ Este projeto consiste em uma API backend para um sistema de gerenciamento de ent
  npm install
 ```
 
-5. Crie um arquivo .env baseado no arquivo .env.example e preencha as variáveis de ambiente necessárias (como a string de conexão com o banco de dados):
+4. Crie um arquivo .env baseado no arquivo .env.example e preencha as variáveis de ambiente necessárias (como a string de conexão com o banco de dados):
   ```bash
    cp .env.example .env
   ```
